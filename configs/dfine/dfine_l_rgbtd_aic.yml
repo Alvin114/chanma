@@ -1,0 +1,101 @@
+__include__:
+  - ../../third_party/D-FINE/configs/runtime.yml
+  - ../../third_party/D-FINE/configs/dfine/include/dataloader.yml
+  - ../../third_party/D-FINE/configs/dfine/include/optimizer.yml
+  - ../../third_party/D-FINE/configs/dfine/include/dfine_hgnetv2.yml
+
+task: detection
+num_classes: 12
+remap_mscoco_category: False
+eval_spatial_size: [960, 960]
+output_dir: runs/e11_dfine_l_rgbtd
+sync_bn: False
+use_amp: False
+
+evaluator:
+  type: CocoEvaluator
+  iou_types: ['bbox']
+
+HGNetv2:
+  name: B4
+  return_idx: [1, 2, 3]
+  freeze_stem_only: True
+  freeze_at: 0
+  freeze_norm: True
+  input_mode: rgbtd
+  adapter_hidden: 32
+
+DFINEPostProcessor:
+  num_top_queries: 100
+
+train_dataloader:
+  type: DataLoader
+  dataset:
+    type: AICZipMultimodalDetection
+    img_folder: data
+    ann_file: data/prepared/dfine/train_balanced.json
+    input_mode: rgbtd
+    return_masks: False
+    transforms:
+      type: Compose
+      ops:
+        - {type: RandomZoomOut, fill: 0}
+        - {type: RandomIoUCrop, p: 0.8}
+        - {type: RandomHorizontalFlip}
+        - {type: Resize, size: [960, 960]}
+        - {type: ConvertPILImage, dtype: float32, scale: True}
+        - {type: ConvertBoxes, fmt: cxcywh, normalize: True}
+      policy:
+        name: stop_epoch
+        epoch: 50
+        ops: [RandomZoomOut, RandomIoUCrop]
+  shuffle: True
+  num_workers: 6
+  drop_last: True
+  total_batch_size: 4
+  collate_fn:
+    type: BatchImageCollateFunction
+    base_size: 960
+    base_size_repeat: 2
+    stop_epoch: 50
+    ema_restart_decay: 0.9999
+
+val_dataloader:
+  type: DataLoader
+  dataset:
+    type: AICZipMultimodalDetection
+    img_folder: data
+    ann_file: data/prepared/dfine/val.json
+    input_mode: rgbtd
+    return_masks: False
+    transforms:
+      type: Compose
+      ops:
+        - {type: Resize, size: [960, 960]}
+        - {type: ConvertPILImage, dtype: float32, scale: True}
+  shuffle: False
+  num_workers: 6
+  drop_last: False
+  total_batch_size: 4
+  collate_fn:
+    type: BatchImageCollateFunction
+
+optimizer:
+  type: AdamW
+  params:
+    - {params: '^(?=.*backbone.input_adapter).*$', lr: 0.00003125}
+    - {params: '^(?=.*backbone)(?!.*(?:input_adapter|norm|bn)).*$', lr: 0.00000078125}
+    - {params: '^(?=.*(?:encoder|decoder))(?=.*(?:norm|bn)).*$', weight_decay: 0.0}
+  lr: 0.000015625
+  betas: [0.9, 0.999]
+  weight_decay: 0.000125
+
+epochs: 60
+clip_max_norm: 0.1
+lr_scheduler:
+  type: MultiStepLR
+  milestones: [55]
+  gamma: 0.1
+lr_warmup_scheduler:
+  type: LinearWarmup
+  warmup_duration: 500

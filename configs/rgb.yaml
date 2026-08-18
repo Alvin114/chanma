@@ -1,0 +1,71 @@
+data:
+  root: data
+  train_manifest: data/prepared/manifests/train.jsonl
+  val_manifest: data/prepared/manifests/val.jsonl
+  test_manifest: data/prepared/manifests/test.jsonl
+  image_size: 960
+  workers: 8
+  prefetch_factor: 2
+
+model:
+  input_mode: rgb
+  num_classes: 12
+  width: 0.5
+  depth: 0.33
+  fusion_heads: 8
+  fusion_loops: 1
+  fusion_dropout: 0.1
+
+train:
+  output_dir: runs/e01_rgb
+  pretrained: weights/yolov5s_state.pt
+  resume: null
+  device: auto
+  seed: 3407
+  deterministic: false
+  epochs: 150
+  batch_size: 12
+  val_batch_size: 12
+  gradient_accumulation: 1
+  optimizer: SGD
+  learning_rate: 0.01
+  final_lr_factor: 0.01
+  momentum: 0.937
+  weight_decay: 0.0005
+  warmup_epochs: 3
+  gradient_clip_norm: 10.0
+  amp: true
+  ema_decay: 0.9999
+  class_aware_sampling_power: 0.5
+  val_interval: 1
+  patience: 30
+  cpu_threads: 8
+
+loss:
+  box: 0.05
+  obj: 1.0
+  cls: 0.5
+  cls_pw: 1.0
+  obj_pw: 1.0
+  anchor_t: 4.0
+  label_smoothing: 0.0
+  focal_gamma: 0.0
+
+augmentation:
+  affine_prob: 0.8
+  degrees: 3.0
+  translate: 0.08
+  scale: 0.25
+  shear: 1.0
+  horizontal_flip: 0.5
+  rgb_brightness: 0.15
+  rgb_contrast: 0.15
+  depth_hole_prob: 0.0
+  infrared_dropout: 0.0
+  depth_dropout: 0.0
+
+inference:
+  val_confidence: 0.001
+  submit_confidence: 0.01
+  nms_iou: 0.65
+  max_detections: 100

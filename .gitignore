@@ -1,0 +1,62 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.venv/
+venv/
+.env
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
+
+# The competition archives are ~17 GB and must never enter Git.
+/data/
+*.zip
+
+# Downloaded/pretrained weights and training checkpoints
+/weights/
+*.pt
+*.pth
+*.ckpt
+
+# Training, validation and inference artifacts
+/runs/
+/outputs/
+/wandb/
+/lightning_logs/
+
+# Reproducible upstream clones; commit pins are kept in third_party/*_COMMIT.
+/third_party/ICAFusion/
+/third_party/yolov5-v7.0/
+
+# Logs and temporary files
+*.log
+*.orig
+events.out.tfevents*
+/这个命令什么意思
+
+# Additional model/data artifacts
+*.onnx
+*.engine
+*.safetensors
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Re-downloadable third-party repositories
+/third_party/D-FINE/
+/third_party/Fusion-Mamba/
+/third_party/M2D-LIF/
