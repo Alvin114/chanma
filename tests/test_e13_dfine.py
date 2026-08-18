@@ -68,6 +68,14 @@ SanitizeMultimodalDepth = copy_paste.SanitizeMultimodalDepth
 DepthValidityGatedResidualFusion = hgnet.DepthValidityGatedResidualFusion
 
 
+def test_e13_training_uses_public_pretrain_without_e12_dependency():
+    project_root = Path(__file__).resolve().parents[1]
+    script = (project_root / "run_e13_dfine_rgbtd_balanced.sh").read_text()
+    config = (project_root / "configs/dfine/dfine_l_rgbtd_e13_aic.yml").read_text()
+
+    assert "dfine_l_obj2coco_e25.pth" in script
+    assert "E12_DIR" not in script
+    assert "tuning_insert_p2: True" in config
 
 
 class _DonorDataset:
@@ -133,6 +141,7 @@ def test_depth_fusion_is_identity_at_initialization_and_trains_output_layer():
 
 
 if __name__ == "__main__":
+    test_e13_training_uses_public_pretrain_without_e12_dependency()
     test_copy_paste_updates_all_modalities_and_target()
     test_depth_sanitizer_restores_binary_channels()
     test_depth_fusion_is_identity_at_initialization_and_trains_output_layer()

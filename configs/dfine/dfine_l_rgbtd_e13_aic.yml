@@ -9,7 +9,7 @@ output_dir: runs/e13_dfine_l_rgbtd_balanced
 sync_bn: False
 use_amp: False
 accumulation_steps: 8
-tuning_insert_p2: False
+tuning_insert_p2: True
 safe_stage_transition: True
 
 HGNetv2:
@@ -56,7 +56,7 @@ train_dataloader:
         - {type: ConvertBoxes, fmt: cxcywh, normalize: True}
       policy:
         name: stop_epoch
-        epoch: 55
+        epoch: 66
         ops: [MultimodalTailCopyPaste, RandomZoomOut, RandomIoUCrop]
   shuffle: True
   num_workers: 6
@@ -66,7 +66,7 @@ train_dataloader:
     type: BatchImageCollateFunction
     base_size: [864, 1536]
     base_size_repeat: null
-    stop_epoch: 55
+    stop_epoch: 66
     ema_restart_decay: 0.9999
 
 val_dataloader:
@@ -93,21 +93,19 @@ val_dataloader:
 optimizer:
   type: AdamW
   params:
-    - {params: '^(?=.*backbone)(?=.*(?:depth_pyramid|depth_feature_fusions)).*$', lr: 0.000125}
-    - {params: '^(?=.*backbone)(?=.*input_adapter).*$', lr: 0.0000625}
-    - {params: '^(?=.*backbone)(?=.*(?:auxiliary_pyramid|feature_fusions))(?!.*(?:depth_pyramid|depth_feature_fusions)).*$', lr: 0.000025}
-    - {params: '^(?=.*backbone)(?!.*(?:input_adapter|auxiliary_pyramid|feature_fusions|depth_pyramid|depth_feature_fusions|norm|bn)).*$', lr: 0.000003125}
+    - {params: '^(?=.*backbone)(?=.*(?:input_adapter|auxiliary_pyramid|feature_fusions|depth_pyramid|depth_feature_fusions)).*$', lr: 0.00025}
+    - {params: '^(?=.*backbone)(?!.*(?:input_adapter|auxiliary_pyramid|feature_fusions|depth_pyramid|depth_feature_fusions|norm|bn)).*$', lr: 0.00000625}
     - {params: '^(?=.*(?:encoder|decoder))(?=.*(?:norm|bn)).*$', weight_decay: 0.0}
-  lr: 0.0000625
+  lr: 0.000125
   betas: [0.9, 0.999]
   weight_decay: 0.000125
 
-epochs: 90
+epochs: 110
 clip_max_norm: 0.1
 lr_scheduler:
   type: MultiStepLR
-  milestones: [70, 84]
+  milestones: [88, 103]
   gamma: 0.1
 lr_warmup_scheduler:
   type: LinearWarmup
-  warmup_duration: 200
+  warmup_duration: 300
